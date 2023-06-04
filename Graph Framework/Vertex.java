@@ -47,8 +47,6 @@ public class Vertex {
     
     
     public void displayInfo( ) {
-
-        System.out.print("Vertex No. "+ getLabel());
         
     }
     
