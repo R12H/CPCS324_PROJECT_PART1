@@ -2,28 +2,24 @@
 package GraphFramework;
 
 import java.util.*;
-import GraphFramework.Graph;
 
 public class MSTAlgorithm {
-
     
     Graph gragh;
     LinkedList<Edge> MSTResultList;
-
+    
     public MSTAlgorithm(Graph gragh){
         this.gragh = gragh;
-    }
-    public MSTAlgorithm(){
     }
     
     public void setMSTResultList(LinkedList<Edge> MSTResultList) {
         this.MSTResultList = MSTResultList;
-
     }
+    
     public Graph getGragh() {
-        return gragh;
-        
+        return gragh;  
     }
+    
    public void displayResultingMST() {
         for (int i = 0; i < MSTResultList.size(); i++) {
             MSTResultList.get(i).source.displayInfo();
@@ -34,4 +30,5 @@ public class MSTAlgorithm {
             System.out.println();
         }
     }
+    
 }
