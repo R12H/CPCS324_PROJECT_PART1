@@ -1,34 +1,24 @@
+
 package GraphFramework;
 
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Arrays;
+import java.util.*;
 public class KruskalAlg extends MSTAlgorithm {
-//    /**
-//     * Kruskal's Algorithm : calculate the taken time to apply kurskal's algorithm on different graph 
-//     */
+    
     int cost;
     
     public KruskalAlg(Graph gragh){
         super(gragh);
     }
+    
     //kruskal implementation
     public void kruskal() {
-
-        LinkedList<Edge>[] allEdges = super.gragh.adjacencylist.clone();
-        Edge [] sortArray = new Edge[super.gragh.edgeNo];
-        int arrayIndex =  0;
-        //add all the edges to priority queue, //sort the edges on weights
-        for (LinkedList<Edge> allEdge : allEdges) {
-            for (int j = 0; j < allEdge.size(); j++) {
-                sortArray [arrayIndex] = allEdge.get(j);
-                arrayIndex++;  
-            }
-        }
+        
+        //Create array with edge to sort the edges by weight
+        Edge[] sortArray = super.gragh.getGraphEdges();
         Arrays.sort(sortArray, Comparator.comparing(Edge::getWeight));
 
         //create a parent []
-        int[] parent = new int[super.gragh.totalVetices];
+        int[] parent = new int[super.gragh.veticesNo];
 
         //makeset
         makeSet(parent);
@@ -37,21 +27,23 @@ public class KruskalAlg extends MSTAlgorithm {
 
         //process vertices - 1 edges
         int index = 0;
-        arrayIndex =  0;
-        while (index < super.gragh.totalVetices - 1 && !(arrayIndex == sortArray.length)) {
-            Edge edge = sortArray [arrayIndex];
-            //check if adding this edge creates a cycle
+        int arrayIndex =  0;
+        
+        while (index < super.gragh.veticesNo - 1 && !(arrayIndex == sortArray.length)) {
             
-            //convert edge source lable to index
-            int sourceIndex = Integer.parseInt(edge.source.getLabel());
-            int targetIndex = Integer.parseInt(edge.target.getLabel());
-         
+            Edge edge = sortArray [arrayIndex];
+            
+            /**convert edge source label to index
+               Note that java represent 'A' character as 65 so we subtract 65 */
+            int sourceIndex = (int) edge.source.getLabel().charAt(0)-65;
+            int targetIndex = (int) edge.target.getLabel().charAt(0)-65;
+            
+            //check if adding this edge creates a cycle
             int x_set = find(parent, sourceIndex);
             int y_set = find(parent, targetIndex);
-
-            if (x_set == y_set) {
-                //ignore, will create cycle
-            } else {
+            
+            if (!(x_set == y_set)) {
+                
                 //add it to our final result
                 MinSpanTree.add(edge);
                 
@@ -60,20 +52,20 @@ public class KruskalAlg extends MSTAlgorithm {
                 index++;
                 union(parent, x_set, y_set);
             }
-             arrayIndex++;
+            arrayIndex++;
         }
         setMSTResultList(MinSpanTree);
     }
         
     
     public void makeSet(int[] parent) {
-        for (int i = 0; i < super.gragh.totalVetices; i++) {
+        for (int i = 0; i < super.gragh.veticesNo; i++) {
             parent[i] = i;
         }
     }
-
    
     public int find(int[] parent, int vertex) {
+        
         if (parent[vertex] != vertex) {
             return find(parent, parent[vertex]);
         }
@@ -81,26 +73,26 @@ public class KruskalAlg extends MSTAlgorithm {
         return vertex;
     }
 
-   public void union(int[] parent, int x, int y) {
+    public void union(int[] parent, int x, int y) {
+       
         int x_set_parent = find(parent, x);
         int y_set_parent = find(parent, y);
+        
         //make x as parent of y
         parent[y_set_parent] = x_set_parent;
     } 
 
-   public int getCost() {
+    public int getCost() {
         return cost;
     }
    
     @Override
-   public void setMSTResultList(LinkedList<Edge> MSTResultList) {
+    public void setMSTResultList(LinkedList<Edge> MSTResultList) {
         super.setMSTResultList(MSTResultList);
     }
         
     public void displayResultingMST (LinkedList<Edge> edgeList){
         super.displayResultingMST();
     }
-
-    }
     
-
+}
