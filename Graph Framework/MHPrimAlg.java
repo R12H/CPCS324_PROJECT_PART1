@@ -1,32 +1,42 @@
-
 package GraphFramework;
 
 import java.util.*;
 
 public class MHPrimAlg extends MSTAlgorithm {
-    
+
     int cost;
 
-    public MHPrimAlg(Graph graph){
+    public MHPrimAlg(Graph graph) {
         super(graph);
     }
-    
-    //Prim implementation
+
+    // Prim's algorithm implementation using Min-heap
     public void mhPrim() {
         
-        PriorityQueue<Edge> minHeap = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
-        LinkedList<Edge> MinSpanTree = new LinkedList<>();
-        boolean[] visited = new boolean[super.gragh.veticesNo];
 
+        // Create a ------------ (Min-heap) to store edges
+        MinHeap minHeap = new MinHeap(super.gragh.edgeNo);
+
+        // Create a boolean array to track visited vertices
+        boolean[] visited = new boolean[super.gragh.veticesNo];
+        
+        LinkedList<Edge> MinSpanTree = new LinkedList<>();
+        
+        // Start from the first vertex (assumed to be the source)
+        visited[0] = true;
+
+
+        //add all the edges to array 
         //add all edges of first vertex in minHeap
         for (Edge edge: super.gragh.vertices.get(0).adjList) {
             minHeap.add(edge);
         }
-
+        
         visited[0] = true;
 
-        while (!minHeap.isEmpty()) {
-            // remove the minimum edge from minHeap
+        // Process vertices until the priority queue is empty
+        while (minHeap.peek() != null) {
+                // remove the minimum edge from minHeap
             Edge edge = minHeap.poll();
             
             int srcIndex = super.gragh.vertices.indexOf(edge.getSource());
@@ -38,8 +48,6 @@ public class MHPrimAlg extends MSTAlgorithm {
 
             MinSpanTree.add(edge);
             this.cost += edge.getWeight();
-            
-            
 
             // visited[source] = true
             visited[srcIndex] = true;
@@ -57,7 +65,7 @@ public class MHPrimAlg extends MSTAlgorithm {
         setMSTResultList(MinSpanTree);
     }
     
-    public int getCost() {
+  public int getCost() {
         return cost;
     }
     
@@ -66,5 +74,4 @@ public class MHPrimAlg extends MSTAlgorithm {
         super.displayResultingMST();
 
     }
-    
 }
