@@ -1,142 +1,215 @@
+/* Team members:
+Raghad Hawsawi 2105869 - Najd Khalid 2006156 - Wed Aljahdali 2105502 - Renad Baghdadi 2006538
 
+Resources
+1)  Levitin, A. (2012). Introduction to the design and analysis of algorithms. Pearson.
+2)  KruskalAlg: https://algorithms.tutorialhorizon.com/kruskals-algorithm-minimum-spanning-tree-mst-complete- java-implementation/
+3)  MinHeap:  https://medium.com/@ankur.singh4012/implementing-min-heap-in-java-413d1c20f90d
+4)  MHPrimAlg :  https://www.baeldung.com/java-prim-algorithm
+
+Section:
+CP1
+ */
 package PhoneNetworkApp;
-import javafx.util.Pair;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Random;
-import java.util.Scanner;
-import GraphFramework.Graph;
-import java.io.File;
-import java.io.FileNotFoundException;
 
-import java.util.Scanner;
+import GraphFramework.*;
+import java.io.*;
+import java.util.*;
 
+public class PhoneNWDesignApp {
 
-public class PhoneNWDesignApp extends BluePrintsGraph{
-
- public static void main(String[] args) throws FileNotFoundException {
-       
-        //
+    public static void main(String[] args) throws FileNotFoundException {
+        
+        //n = number of vertex \ m = number of edge
         int n = 0, m = 0, Choice = -1;
         
-        //virable to calcolat the time
+        //variable to calculate the time
         double StartTime, FinishTime, totalTime;
         
-        //
+        //create file object for prim and kruskal
         File file = new File("Graph.txt");
         
+        //create scanner object
         Scanner in = new Scanner(System.in);
-        //array of m and n size
-        int [][] size = {{1000, 10000} , {1000, 15000} ,{1000, 25000} , 
+        
+        //array of m and n size for prim and kruskal
+        int [][] size =  {{1000, 10000} , {1000, 15000} ,{1000, 25000} , 
                          {5000, 15000} , {5000, 25000} ,
                          {10000, 15000} , {10000, 25000}}; 
+        
+        
         // menu do while 
         do {
             System.out.println("\t\t*** Test and Compare Different Minimum Spanning Tree Algorithms ***");
             System.out.println("1- Kruskal's Algorithm & Prim's Algorithm (based on Min Heap)");
             System.out.println("0- Exit");
             System.out.print("> Enter your choice : ");
+            
             Choice = in.nextInt();
-            if (Choice > 1 && Choice < 0) {
+            System.out.println();
+            
+            if (Choice > 1 && Choice < 0)
                 System.out.println("****Invalid input!****");
-            }
             // menu break condition 
+            
         } while (Choice != 1 && Choice != 0);
+        
+        //Kruskal's Algorithm & Prim's Algorithm 
         if (Choice == 1) {
+            
             System.out.println("1- Experimental comparison of two of Algorthim");
             System.out.println("2- Read gragh from file");
             System.out.println("3- Chose from available cases");
             System.out.print("> Enter your choice: ");
+            
             Choice = in.nextInt();
+            System.out.println();
+            
             // switch for all avaliable choice 
                 while (Choice < 1 || Choice > 3) {
                     System.out.println("Invalid input!");
                     System.out.print("> Enter your choice: ");
                     Choice = in.nextInt();
+                    System.out.println();
                 }
+                
             switch (Choice) {
+                
                 case 1: {
                     // number of trial of each case
                     int numberOfTrial = 10;
-                    // number of cases
-                    int numberOfCase = 7;
+                    // number of cases (7)
+                    int numberOfCase =  size.length;
                     
                     //two arrays to save algorthim time
                     double [][] kruskalTime = new double[numberOfCase][numberOfTrial];
                     double [][] primTime = new double[numberOfCase][numberOfTrial];
                     
+                    //start the Experimental comparison
                     for(int i = 0; i < numberOfCase; i++){
                         for(int j = 0; j < numberOfTrial; j++){
+                            
+                            System.out.println("\n-----------------------------------------------------------------------------------------------------------\n");
+                            
+                            //initialize of  n and m
                             n = size[i][0];
                             m = size[i][1];
                             
-                            BluePrintsGraph phLNetwork = new BluePrintsGraph(n, m);
-                            
-                            System.out.print("n = " + n + "  m = " + m);
+                            //create BluePrintsGraph object
+                            BluePrintsGraph phLNetwork = new BluePrintsGraph();
+
                             //make random graph
                             phLNetwork.makeGraph(n, m);
                             
-                            //calcolate kruskal time
+                            //calculate kruskal time
                             StartTime = System.currentTimeMillis();
-                            //to perform kruskal and prim min heap
-                            phLNetwork.kruskal();
+                            
+                            //create KruskalAlg object
+                            KruskalAlg k = new KruskalAlg(phLNetwork);
+                            
+                            //to perform kruskal
+                            k.kruskal();
+                            System.out.println("The phone network (minimum spanning tree) generated by Kruskal algorithm is as follows:");
+                            System.out.println("The cost of designed phone network: " + k.getCost());
+
                             FinishTime = System.currentTimeMillis();
                             totalTime = FinishTime - StartTime;
+                            
+                            //save the time in time array
                             kruskalTime [i][j] = totalTime;
                             System.out.println("Total runtime of Kruskal's Algorithm: " + totalTime + " ms.");
+                            
+                            //-------------------------------------------------\\
+                            System.out.println("\n-----------------------\n");
         
-                            //calcolate prim time
+                            //calculate prim time
                             StartTime = System.currentTimeMillis();
+                            
                             //to perform prim min heap
-                            //prim
+                            MHPrimAlg p = new MHPrimAlg(phLNetwork);
+                            
+                            //to perform prim min heap
+                            p.mhPrim();
+                            System.out.println("The phone network (minimum spanning tree) generated by min-heap based Prim algorithm is as follows:");
+                            System.out.println("The cost of designed phone network: " + p.getCost());
+
                             FinishTime = System.currentTimeMillis();
                             totalTime = FinishTime - StartTime;
+                            
+                            //save the time in time array
                             primTime [i][j] = totalTime;
                             System.out.println("Total runtime of Prim's Algorithm: " + totalTime + " ms.");
-                            //-------------------------------------------------\\
+                            
                                  
                         }
                     }
                     //display the resulte
                     displayTime(kruskalTime ,primTime, size);
-                }
-                break;
+                    }
+                    break;
+                
                 case 2: {
+                    
+                    System.out.println("\n-----------------------------------------------------------------------------------------------------------\n");
+                    
+                    //creat BluePrintsGraph object
                     BluePrintsGraph phLNetwork = new BluePrintsGraph();
+                    
+                    //read the gragh from file
                     phLNetwork.readGraphFromFile(file);
 
-                    phLNetwork.kruskal();
+                    //create KruskalAlg object
+                    KruskalAlg k = new KruskalAlg(phLNetwork);
+
+                    //to perform kruskal
+                    k.kruskal();
+                    System.out.println("The phone network (minimum spanning tree) generated by Kruskal algorithm is as follows:");
+                    k.displayResultingMST();
+                    System.out.println("The cost of designed phone network: " + k.getCost());
                     
+                    //-------------------------------------------------\\
+                    System.out.println("\n-----------------------\n");
                     
-                }
-                break;
+                    //create MHPrimAlg object
+                    MHPrimAlg p = new MHPrimAlg(phLNetwork);
+                    
+                    //to performprim min heap
+                    p.mhPrim();
+                    System.out.println("The phone network (minimum spanning tree) generated by min-heap based Prim algorithm is as follows:");
+                    p.displayResultingMST();
+                    System.out.println("The cost of designed phone network: " + p.getCost());
+                     
+                    }
+                    break;
+                    
                 case 3: {
                     System.out.println("> Available cases (where n represents # of vertices and m represents # of edges: )");
-                    System.out.println(" 1-  n=1,000 - m=10,000");
-                    System.out.println(" 2-  n=1,000 - m=15,000");
-                    System.out.println(" 3-  n=1,000 - m=25,000");
-                    System.out.println(" 4-  n=5,000 - m=15,000");
-                    System.out.println(" 5-  n=5,000 - m=25,000");
-                    System.out.println(" 6-  n=10,000 - m=15,000");
-                    System.out.println(" 7-  n=10,000 - m=25,000");
+                    System.out.println(" 1-  n = 1,000 - m = 10,000\n"
+                                    +" 2-  n = 1,000 - m = 15,000\n"
+                                    +" 3-  n = 1,000 - m = 25,000\n"
+                                    +" 4-  n = 5,000 - m = 15,000\n"
+                                    +" 5-  n = 5,000 - m = 25,000\n"
+                                    +" 6-  n = 10,000 - m = 15,000\n"
+                                    +" 7-  n = 10,000 - m = 25,000\n");
                     System.out.print("> Enter a case to1 test: ");
                     Choice = in.nextInt();
+                    System.out.println();
+                    
                     // switch for all avaliable cases of the test 
                     while (Choice < 1 || Choice > 7) {
                         System.out.println("Invalid input!");
                         System.out.print("> Enter a case to test: ");
                         Choice = in.nextInt();
+                        System.out.println();
                     }
                     switch (Choice) {
                         case 1: {
                             //n = 1000;
-                            //n = size[0][0];
-                            n = 10;
+                            n = size[0][0];
+                            
                             //m = 10000;
-                            //m = size[0][1];
-                            m = 10;
-
+                            m = size[0][1];
+                          
                         }
                         break;
                         case 2: {
@@ -182,51 +255,87 @@ public class PhoneNWDesignApp extends BluePrintsGraph{
                         }
                         break;   
                   }
-                  BluePrintsGraph phLNetwork = new BluePrintsGraph(n, m);
+                  //create BluePrintsGraph object
+                  BluePrintsGraph phLNetwork = new BluePrintsGraph();
+                    
+                  //make random graph
                   phLNetwork.makeGraph(n, m);
-                  // to perform kruskal and prim min heap
-                  phLNetwork.kruskal();
-                  // graph.PrimMinHeap();
-                     }
-                    break;
+                  
+                  //create KruskalAlg object
+                  KruskalAlg k = new KruskalAlg(phLNetwork);
+                  
+                  // to perform kruskal 
+                  k.kruskal();
+                  System.out.println("The phone network (minimum spanning tree) generated by Kruskal algorithm is as follows:");
+                  k.displayResultingMST();
+                  System.out.println("The cost of designed phone network: " + k.getCost());
+                  
+                  
+                  //-------------------------------------------------\\
+                  System.out.println("\n-----------------------\n");
+                   
+                  //create MHPrimAlg object
+                  MHPrimAlg p = new MHPrimAlg(phLNetwork);
+                  
+                  // to perform prim
+                  p.mhPrim();
+                  System.out.println("The phone network (minimum spanning tree) generated by min-heap based Prim algorithm is as follows:");
+                  p.displayResultingMST();
+                  System.out.println("The cost of designed phone network: " + p.getCost());
+                  
+                  }
+                  break;
 
         }      
-    } 
-       if (Choice == 0 ) {
+    }
+        
+       if (Choice == 0 )
             System.out.println("Have nice day! :)");
-        }
        
        if (Choice < 1 && Choice > 3)
            System.out.println("****Invalid input!****"); 
     }
+ 
+    //----------------------------------------------------------------------------------
+ 
     public static void displayTime(double [][] a, double [][] b, int [][] c){
-       System.out.println("\n\t\t\t\t\t\tkruska Algorithm time(ms)");
-         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        System.out.print("\t\t\t");
-        for(int i = 0; i < a[0].length;i++)
-            System.out.print("T" + (i + 1) + "\t\t");
-        System.out.println();
-        printTime(a, c);
-        System.out.println();
-        System.out.println("\n\t\t\t\t\t\t\t\tprim Algorithm time(ms)");
+        
+        System.out.println("\n\t\t\t\t\t\tkruska Algorithm time(ms)");
         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         System.out.print("\t\t\t");
+        
         for(int i = 0; i < a[0].length;i++)
             System.out.print("T" + (i + 1) + "\t\t");
         System.out.println();
+        
+        printTime(a, c);
+        
+        System.out.println();
+        System.out.println("\n\t\t\t\t\t\tprim Algorithm time(ms)");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.print("\t\t\t");
+        
+        for(int i = 0; i < a[0].length;i++)
+            System.out.print("T" + (i + 1) + "\t\t");
+        System.out.println();
+        
         printTime(b, c);
     }
-     public static void printTime(double [][] a, int [][] c){
-          for(int i=0;i<a.length;i++){
+    
+    //----------------------------------------------------------------------------------
+    
+    public static void printTime(double [][] a, int [][] c){
+        
+        for(int i=0;i<a.length;i++){
             System.out.print("n: " + c[i][0] + "| m: " + c[i][1] + "\t");
-            for(int j=0;j<a[i].length;j++){
+            
+            for(int j=0;j<a[i].length;j++)
                 System.out.print(a[i][j] + "\t\t");
-                }
+
             System.out.println();
            }
-         System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        }
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+    
+    }
+ 
 }
-
-
-
