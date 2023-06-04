@@ -1,94 +1,219 @@
 package GraphFramework;
 
-import java.io.*;
-import java.util.*;
 
-public class Graph {
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Random;
+import java.util.Scanner;
+import javafx.util.Pair;
 
+/**
+ *
+ * @author najd
+ */
+public abstract class Graph {
+
+
+    boolean isDigraph;
+   /*-------------------------------*/
+    int totalVetices;
+    int totalEdge;
     int veticesNo;
     int edgeNo;
-    boolean isDigraph = false;
-    LinkedList<Vertex> vertices;
-    
-    //----------------------------------------------------------------------------------
 
-    public Graph() {
-        this.veticesNo = 0;
-        this.edgeNo = 0;
+    
+    int cost;
+    LinkedList<Vertex> vertices;
+    /**
+     * a linked list that save every vertex adjacent 
+     */
+    LinkedList<Edge>[] adjacencylist;
+    
+    public Graph(){
+        this.totalEdge = 0;
+        this.totalVetices = 0;
         this.isDigraph = false;
     }
 
-    //----------------------------------------------------------------------------------
-    
-    public Graph(int veticesNo, int edgeNo, boolean isDigraph) {
-        this.veticesNo = veticesNo;
-        this.edgeNo = edgeNo;
-        this.isDigraph = isDigraph;
+    public Graph(int vertices, int edges) {
+        this.totalVetices = vertices;
+        this.totalEdge = edges;
+        adjacencylist = new LinkedList[vertices];
+        //initialize adjacency lists for all the vertices
+        for (int i = 0; i < vertices; i++) {
+            adjacencylist[i] = new LinkedList<>();
+        }
     }
+
     
-    //----------------------------------------------------------------------------------
+    public void addEdge(Vertex source, Vertex destination, int weight) {
+        // convert label from string to int to use it as an index in edge list
+        int sourceIndex = Integer.parseInt(source.label);
+        adjacencylist[sourceIndex].addFirst(createEdge(source, destination, weight));
+        if (this.isDigraph == true) {
+        //in case the graph's directed increase edges by one
+            this.edgeNo++;
+        }
+        //for undirected graph
+        else {
+           // convert label from string to int to use it as an index in edge list
+           int targetIndex = Integer.parseInt(destination.label); 
+        adjacencylist[targetIndex].addFirst(createEdge(destination, source, weight));
+        //in case the graph's undirected increase edges by two
+        this.edgeNo = this.edgeNo + 2;
+        }
+    }
+
+//    /**
+//     * Kruskal's Algorithm : calculate the taken time to apply kurskal's algorithm on different graph 
+//     */
+    public void kruskal() {
+
+        LinkedList<Edge>[] allEdges = adjacencylist.clone(); 
+        PriorityQueue<Edge> priorityQueueVar = new PriorityQueue<>(totalEdge, Comparator.comparingInt(o -> o.weight));
+        //add all the edges to priority queue, //sort the edges on weights
+        for (int i = 0; i < allEdges.length; i++) {
+            for (int j = 0; j < allEdges[i].size(); j++) {
+                priorityQueueVar.add(allEdges[i].get(j));
+                
+            }
+        }
+        //create a parent []
+        int[] parent = new int[totalVetices];
+
+        //makeset
+        makeSet(parent);
+
+        LinkedList<Edge> MinSpanTree = new LinkedList<>();
+
+        //process vertices - 1 edges
+        int index = 0;
+        while (index < totalVetices - 1 && !priorityQueueVar.isEmpty()) {
+            Edge edge = priorityQueueVar.remove();
+            //check if adding this edge creates a cycle
+            
+            //convert edge source lable to index
+            int sourceIndex = Integer.parseInt(edge.source.getLabel());
+            int targetIndex = Integer.parseInt(edge.target.getLabel());
+         
+            int x_set = find(parent, sourceIndex);
+            int y_set = find(parent, targetIndex);
+
+            if (x_set == y_set) {
+                //ignore, will create cycle
+            } else {
+                //add it to our final result
+                MinSpanTree.add(edge);
+                index++;
+                union(parent, x_set, y_set);
+            }
+        }
+        
+        //print the total time consumed by the algorithm
+        displayInfo(MinSpanTree);
+        this.cost(MinSpanTree);
+        System.out.println("Minimum Spanning Tree Cost = " +  cost(MinSpanTree));
+        
+        
+    }
+
+
+  
+    public void makeSet(int[] parent) {
+        for (int i = 0; i < totalVetices; i++) {
+            parent[i] = i;
+        }
+    }
+
+   
+    public int find(int[] parent, int vertex) {
+        if (parent[vertex] != vertex) {
+            return find(parent, parent[vertex]);
+        };
+        return vertex;
+    }
+
+   public void union(int[] parent, int x, int y) {
+        int x_set_parent = find(parent, x);
+        int y_set_parent = find(parent, y);
+        //make x as parent of y
+        parent[y_set_parent] = x_set_parent;
+    } 
+
+   private void displayInfo(LinkedList<Edge> edgeList) {
+        int cost = 0;
+        for (int i = 0; i < edgeList.size(); i++) {
+            edgeList.get(i).source.displayInfo();
+            System.out.print(" - ");
+            edgeList.get(i).target.displayInfo();
+            System.out.print(" : ");
+            edgeList.get(i).displayInfo();
+            System.out.println();
+        }
+    }
+   
+    public int cost(LinkedList<Edge> edgeList) {
+        int cost = 0;
+        for (int i = 0; i < edgeList.size(); i++) {
+            Edge edge = edgeList.get(i);
+            cost += edge.weight;
+        }
+        return cost;
+    }
+
+    //----------------------------------------------------------------------
+
 
     public void makeGraph(int reqVetices, int reqEdges) {
-
-        vertices = new LinkedList<>();
-
+        // instance of Random class
         Random random = new Random();
-        
-        //Create first vertex so we can use (i) and (i+1) for each round
-        vertices.add(new Vertex("" + 0));
-        veticesNo++;
-
-        for (int i = 1; i < reqVetices; i++) {
-            
-            vertices.add(new Vertex("" + i));
-
-            veticesNo++;
-
-            int weight = random.nextInt(10) + 1;
-
-            addEdge(vertices.get(i - 1), vertices.get(i), weight);
+        // ensure that all vertices are connected
+        for (int i = 0; i < totalVetices - 1; i++) {
+             // generate random weights in range 0 to 20
+            int RandomNum = random.nextInt(20) + 1;
+            addEdge(createVertex(i + ""), createVertex((i + 1) + ""), RandomNum);
             this.edgeNo++;
 
         }
 
-        //determine the reamaining edges so we create more that connects old vertexes
-        int remEdges = reqEdges - this.edgeNo;
+        // generate random graph with the remaining edges
+        int remaning = totalEdge - (totalVetices - 1);
 
-        for (int i = 0; i < remEdges; i++) {
-
-            Vertex srcVer = vertices.get(random.nextInt(reqVetices));
-            Vertex desVer = vertices.get(random.nextInt(reqVetices));
-
-            boolean isConnected = isConnected(srcVer, desVer, srcVer.adjList);
-            
-            //Be careful it won't create a self loop nor dublicate one
-            //or else break the loop and decrease the i
-            if (srcVer == desVer || isConnected) {
-                i -= 1;
+        for (int i = 0; i < remaning; i++) {
+            Vertex source = createVertex(random.nextInt(totalVetices) + "");
+            Vertex Destination = createVertex(random.nextInt(totalVetices) + "");
+            if (Destination == source || isConnected(source, Destination, adjacencylist)) { // to avoid self loops and duplicate edges
+                i--;
                 continue;
             }
-
-            int weight = random.nextInt(10) + 1;
-
-            addEdge(srcVer, desVer, weight);
+            // generate random weights in range 0 to 20
+            int weight = random.nextInt(20) + 1;
+            // add edge to the graph
+            addEdge(source, Destination, weight);
             this.edgeNo++;
+        }
+            
 
         }
 
-    }
-    
-    //----------------------   Method to check if there's edge   -----------------------
 
-    public boolean isConnected(Vertex src, Vertex des, LinkedList<Edge> srcEdges) {
+   //----------------------   Method to check if there's edge   -----------------------
 
-        for (int i = 0; i < srcEdges.size(); i++) {
-            if (srcEdges.get(i).getTarget() == des) {
-                return true;
+    public boolean isConnected(Vertex src, Vertex des, LinkedList<Edge>[] srcEdges) {
+        for (LinkedList<Edge> i : srcEdges) {
+            for (Edge edge : i) {
+                if ((edge.parent == src && edge.target == des) || (edge.parent == des && edge.target == src)) {
+                    return true;
             }
         }
+        
+    }
         return false;
     }
-    
+        
     //----------------------------------------------------------------------------------
 
     public void readGraphFromFile(File file) throws FileNotFoundException {
@@ -101,26 +226,38 @@ public class Graph {
         //Assaign the values
         this.vertices = new LinkedList<>();
         this.isDigraph = input.nextInt() == 1 ? true : false;
-        this.veticesNo = input.nextInt();
-        this.edgeNo = input.nextInt();
+        this.totalVetices = input.nextInt();
+        this.totalEdge = input.nextInt();
 
+        LinkedList<Edge>[] list  = new LinkedList[totalVetices];
+        for (int i = 0; i < totalVetices; i++) {
+            list[i] = new LinkedList<>();
+        }
+        //add input edge to adge list
+        this.adjacencylist = list.clone();
+        
         while (input.hasNext()) {
             
             //Create objects Inititially in case it's a new vertex
-            Vertex srcVer = new Vertex(input.next());
-            Vertex desVer = new Vertex(input.next());
+            String s = input.next();
+            //convert the char to int than to string
+            s = "" + (s.charAt(0) - 65);
+            Vertex srcVer = createVertex(s);
+            
+            s = input.next();
+            //convert the char to int than to string
+            s = "" + (s.charAt(0) - 65);
+            Vertex desVer = createVertex(s);
 
             if (vertices.isEmpty()) {
                 vertices.add(srcVer);
                 vertices.add(desVer);
                 
             } else {
-                
                 //To search for the two vertex
                 boolean found = false;
                 
                 for (int i = 0; i < vertices.size(); i++) {
-                    
                     // If the label of the vertex with index (i) == the new vertex label
                     if (vertices.get(i).getLabel().equals(srcVer.getLabel())) {
                         
@@ -135,8 +272,7 @@ public class Graph {
                 if (!found) {
                     vertices.add(srcVer);
                 }
-                
-                
+
                 //doing the same process for the dtarget vertex
                 found = false;
 
@@ -153,35 +289,21 @@ public class Graph {
             }
 
             addEdge(srcVer, desVer, input.nextInt());
+            kruskal();
+
+       
+
 
         }
 
     }
     
-    //----------------------------------------------------------------------------------
-
-    public void addEdge(Vertex v, Vertex u, int w) {
-        //v = sourse
-        //u = taget
-        //w = weight
-        v.adjList.add(new Edge(v, u, w));
-        //in case the graph's directed increase edges by one
-
-        //in case it's undirected add the edge to the target and increase edges by two
-        if (!isDigraph) {
-            u.adjList.add(new Edge(u, v, w));
-        }
-
+    public int getCost() {
+        return cost;
     }
     
-    //----------------------------------------------------------------------------------
+    public abstract Vertex createVertex(String label);
 
-    public void createVertex() {
-
-    }
-
-    public void createEdge() {
-
-    }
-
+    public abstract Edge createEdge(Vertex source, Vertex destination, int weight);
+    
 }
