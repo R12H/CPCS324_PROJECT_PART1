@@ -1,16 +1,17 @@
 
 package GraphFramework;
 
+import java.util.*;
 
-
-
-public class Edge {
+public class Edge implements Comparator<Edge> {
     
     Vertex parent;
     Vertex source;
     Vertex target;
     int weight;
-
+    
+    public Edge() {}
+    
     public Edge(Vertex source, Vertex target, int weight) {
         this.source = source;
         this.target = target;
@@ -40,11 +41,19 @@ public class Edge {
         return weight;
     }
     
-    public String displayInfo() {
-        return "Office No. "+ source.getLabel() + " – Office No. "+target.getLabel() + " : line length: "+ weight;
-        
+    @Override
+    public int compare(Edge edge1, Edge edge2){
+ 
+        if (edge1.weight < edge2.weight) return -1;
+ 
+        if (edge1.weight > edge2.weight) return 1;
+ 
+        return 0;
     }
     
-    
+    public void displayInfo() {
+        //return "Office No. "+ this.source.getLabel()+" - " + "Office No."+ this.target.getLabel() + " : line length: "+ weight;
+        System.out.print(" line length: "+ weight);
+    }
     
 }
